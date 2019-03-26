@@ -3,6 +3,7 @@ from typing import List
 import json
 
 from confluent_kafka import Consumer, Producer, Message
+import click
 
 from .kafka import ConsumerWrapper, ProducerWrapper
 
@@ -82,17 +83,18 @@ class TicketProcessor(ConsumerWrapper):
         self.reporter.flush()
 
 
-if __name__ == '__main__':
+@click.command()
+@click.option('--kafka-hosts', default='localhost:9092', help='Kafka servers (use "," to separate host)')
+def start(kafka_hosts):
     logging.basicConfig(level=logging.DEBUG)
-
     consumer_config = {
-        'bootstrap.servers': 'localhost:9092',
+        'bootstrap.servers': kafka_hosts,
         'group.id': 'ticket-office',
         'auto.offset.reset': 'earliest'
     }
 
     producer_config = {
-        'bootstrap.servers': 'localhost:9092'
+        'bootstrap.servers': kafka_hosts
     }
 
     processor = TicketProcessor(Consumer(consumer_config), Producer(producer_config))
@@ -102,3 +104,7 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         processor.stop_consumer_loop()
         processor.wait_until_stop()
+
+
+if __name__ == '__main__':
+    start()
