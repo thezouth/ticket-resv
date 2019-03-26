@@ -33,6 +33,9 @@ class ProducerWrapper:
 
         return await future
 
+    def flush(self):
+        self.producer.flush(1000)
+
     @staticmethod
     def __callback_wrapper(future: asyncio.Future):
         def __callback(err, result):
@@ -80,7 +83,12 @@ class ConsumerWrapper:
     def _process(self, messages: List[Message]):
         raise NotImplementedError('Expect child object implement this one.')
 
+    def _after_stop(self):
+        pass
+
     def __consumer_loop(self):
         while self.running:
             messages = self.consumer.consume(self.batch_size, 0.1)
             self._process(messages)
+
+        self._after_stop()

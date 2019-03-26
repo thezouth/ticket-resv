@@ -1,5 +1,4 @@
 import logging
-from time import time
 from typing import List
 import json
 
@@ -78,6 +77,9 @@ class TicketProcessor(ConsumerWrapper):
         #
         # if remain_ticket <= self.batch_size:
         #     self.batch_size = remain_ticket
+
+    def _after_stop(self):
+        self.reporter.flush()
 
 
 if __name__ == '__main__':
